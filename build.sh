@@ -1,0 +1,1 @@
+gcc main.c ./utils/handler.c ./utils/hashmap.c ./utils/socket.c ./utils/thread.c ./utils/md5.c -o redirector -lm -pthread
