@@ -17,10 +17,12 @@ int main(int argc, char *argv[], char *env[]) {
 
     if (strcmp(argv[1], "run") == 0) {
         if (argc == 2) {
+            usage_logo();
             return run_server(argv[0], PROXY_PORT);
         } else if (argc == 3) {
             int port = atoi(argv[2]);
             if (port > 0 && port < 65536) {
+                usage_logo();
                 return run_server(argv[0], port);
             } else {
                 printf("\x1b[1;37;41mError:\x1b[0m the host port must be at 1 ~ 65535.\n");
