@@ -1,41 +1,33 @@
 .PHONY: clean
 
 CC = gcc
-TARGET = main
+TARGET = redirector
 
 SRC = $(call rwildcard, ./, %.c)
 rwildcard = $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
 
 ifeq ($(OS), Windows_NT)
-	REMOVE = del
-	TARGET := redirector.exe
+	REMOVE = cmd /c del
+	TARGET := $(TARGET).exe
 	SRC := $(subst /,\,$(SRC))
+	PARAMS = -s -O2 -flto
 	LIBRARY = -lws2_32 -lm
 else
-	REMOVE = rm
-	TARGET := redirector
+	REMOVE = rm -f
+	TARGET := $(TARGET)
 	SRC := $(subst \,/,$(SRC))
+	PARAMS = -O2 -flto
 	LIBRARY = -pthread -lm
 endif
 
-preprocessing = $(SRC:.c=.i)
-compilation = $(preprocessing:.i=.s)
-assembly = $(compilation:.s=.o)
+compilation = $(SRC:.c=.o)
 
-$(TARGET): $(assembly)
-	$(CC) $(assembly) -o $(TARGET) -s -flto $(LIBRARY)
+$(TARGET): $(compilation)
+	$(CC) $(compilation) -o $(TARGET) $(PARAMS) $(LIBRARY)
 
-$(assembly): %.o: %.s
-	$(CC) -c $< -o $@
-
-$(compilation): %.s: %.i
-	$(CC) -S $< -o $@ -O2 -flto
-
-$(preprocessing): %.i: %.c
-	$(CC) -E $< -o $@
+$(compilation): %.o: %.c
+	$(CC) -c $< -o $@ $(PARAMS)
 
 clean:
-	$(REMOVE) $(preprocessing)
 	$(REMOVE) $(compilation)
-	$(REMOVE) $(assembly)
 	$(REMOVE) $(TARGET)
